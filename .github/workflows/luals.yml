@@ -53,5 +53,12 @@ jobs:
             --check=$GITHUB_WORKSPACE/project \
             || true
 
-          # Run the parser script
-          cat $GITHUB_WORKSPACE/luals_output/check.json | $GITHUB_WORKSPACE/gmod_luals_workflow/check_parser.py
+          if [ -f $GITHUB_WORKSPACE/luals_output/check.json ]; then
+            echo "LuaLS check completed - no issues found"
+          else
+            echo "LuaLS check failed."
+            # Run the parser script
+            cat $GITHUB_WORKSPACE/luals_output/check.json | $GITHUB_WORKSPACE/gmod_luals_workflow/check_parser.py
+
+            exit 1
+          fi
