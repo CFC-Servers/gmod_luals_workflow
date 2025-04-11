@@ -1,0 +1,57 @@
+name: GMod LuaLS Workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout calling repository"
+        uses: actions/checkout@v4
+        with:
+          path: project
+
+      - name: "Checkout workflow repository"
+        uses: actions/checkout@v4
+        with:
+          repository: CFC-Servers/gmod_luals_workflow
+          path: gmod_luals_workflow
+
+      - name: "Checkout GLua Snippets"
+        uses: actions/checkout@v4
+        with:
+          repository: luttje/glua-api-snippets
+          ref: lua-language-server-addon
+          path: glua-api-snippets
+
+      - name: Download LuaLS Binaries
+        run: |
+          cd $GITHUB_WORKSPACE
+          mkdir luals
+          cd $GITHUB_WORKSPACE/luals
+
+          curl -LO https://github.com/LuaLS/lua-language-server/releases/download/3.14.0/lua-language-server-3.14.0-linux-x64.tar.gz
+          tar -xzf lua-language-server-3.14.0-linux-x64.tar.gz
+
+      - name: Prepare config
+        run: |
+          sed "s#{{WORKSPACE}}#$GITHUB_WORKSPACE#g" $GITHUB_WORKSPACE/gmod_luals_workflow/luals_config.json > $GITHUB_WORKSPACE/luals_config.json
+          cat $GITHUB_WORKSPACE/luals_config.json
+
+      - name: Run LuaLS
+        run: |
+          cd $GITHUB_WORKSPACE/project
+
+          $GITHUB_WORKSPACE/luals/bin/lua-language-server \
+            --configpath=$GITHUB_WORKSPACE/luals_config.json \
+            --loglevel=warn \
+            --logpath=$GITHUB_WORKSPACE/luals_output \
+            --check_format=json \
+            --check=$GITHUB_WORKSPACE/project
+
+          echo "LuaLS output:"
+          cat $GITHUB_WORKSPACE/luals_output/check.json
+
+          # Run the parser script
+          cat $GITHUB_WORKSPACE/luals_output/check.json | $GITHUB_WORKSPACE/glua_luals_workflow/check_parser.py
