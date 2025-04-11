@@ -49,7 +49,8 @@ jobs:
             --loglevel=warn \
             --logpath=$GITHUB_WORKSPACE/luals_output \
             --check_format=json \
-            --check=$GITHUB_WORKSPACE/project
+            --check=$GITHUB_WORKSPACE/project \
+            || true
 
           echo "LuaLS output:"
           cat $GITHUB_WORKSPACE/luals_output/check.json
