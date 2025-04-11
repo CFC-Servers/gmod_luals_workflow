@@ -29,6 +29,9 @@ jobs:
       - name: Download LuaLS Binaries
         run: |
           cd $GITHUB_WORKSPACE
+          echo "In $GITHUB_WORKSPACE"
+          ls -alh
+
           mkdir luals
           cd $GITHUB_WORKSPACE/luals
 
@@ -43,6 +46,7 @@ jobs:
       - name: Run LuaLS
         run: |
           cd $GITHUB_WORKSPACE/project
+          pwd
 
           $GITHUB_WORKSPACE/luals/bin/lua-language-server \
             --configpath=$GITHUB_WORKSPACE/luals_config.json \
@@ -51,9 +55,6 @@ jobs:
             --check_format=json \
             --check=$GITHUB_WORKSPACE/project \
             || true
-
-          echo "LuaLS output:"
-          cat $GITHUB_WORKSPACE/luals_output/check.json
 
           # Run the parser script
           cat $GITHUB_WORKSPACE/luals_output/check.json | $GITHUB_WORKSPACE/glua_luals_workflow/check_parser.py
