@@ -16,7 +16,7 @@ def main():
 
     # No errors!
     if not data:
-        return
+        sys.exit(0)
 
     for file_uri, diagnostics in data.items():
         try:
@@ -67,6 +67,8 @@ def main():
             params_str = ",".join(params)
 
             print(f"::{annotation_type} {params_str}::{escape_data(message)}")
+
+    sys.exit(1)
 
 if __name__ == "__main__":
     main()
