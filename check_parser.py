@@ -14,6 +14,10 @@ def main():
         print(f"::error::Failed to parse JSON input: {e}", file=sys.stderr)
         sys.exit(1)
 
+    # No errors!
+    if not data:
+        return
+
     for file_uri, diagnostics in data.items():
         try:
             # Clean up the file path: remove file:// prefix and decode URL encoding
