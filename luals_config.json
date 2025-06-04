@@ -1,10 +1,12 @@
 {
   "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
-  "runtime.version": "Lua 5.1",
+  "runtime.version": "LuaJIT",
   "hint.enable": false,
   "workspace.library": ["{{WORKSPACE}}/glua-api-snippets"],
+  "runtime.plugin": ["{{WORKSPACE}}/luals_gmod_include/plugin.lua"],
   "runtime.special": {
-    "include": "require"
+    "include": "require",
+    "includeCS": "require"
   },
   "format.defaultConfig": {
     "indent_style": "space",

@@ -26,6 +26,12 @@ jobs:
           ref: lua-language-server-addon
           path: glua-api-snippets
 
+      - name: "Checkout LuaLS Include Addon"
+        uses: actions/checkout@v4
+        with:
+          repository: CFC-Servers/luals_gmod_include
+          path: luals_gmod_include
+
       - name: Download LuaLS Binaries
         run: |
           cd $GITHUB_WORKSPACE
