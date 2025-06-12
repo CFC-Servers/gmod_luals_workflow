@@ -51,22 +51,23 @@ def main():
                 continue
 
             # Extract location details
-            start_line = range_info.get('start', {}).get('line')
-            start_col = range_info.get('start', {}).get('character')
-            end_line = range_info.get('end', {}).get('line')
-            end_col = range_info.get('end', {}).get('character')
+            start_line = range_info.get('start', {}).get('line') + 1
+            start_col = range_info.get('start', {}).get('character') + 1
+            end_line = range_info.get('end', {}).get('line') + 1
+            end_col = range_info.get('end', {}).get('character') + 1
 
             # Build params string, only including available location info
             params = [f"file={filename}"]
-            if start_line is not None: params.append(f"line={start_line + 1}")
-            if start_col is not None: params.append(f"col={start_col + 1}")
-            if end_line is not None: params.append(f"endLine={end_line + 1}")
-            if end_col is not None: params.append(f"endColumn={end_col + 1}")
+            if start_line is not None: params.append(f"line={start_line}")
+            if start_col is not None: params.append(f"col={start_col}")
+            if end_line is not None: params.append(f"endLine={end_line}")
+            if end_col is not None: params.append(f"endColumn={end_col}")
             params.append(f"title={code}")
 
             params_str = ",".join(params)
 
             print(f"::{annotation_type} {params_str}::{escape_data(message)}")
+            print(f"{filename}:{start_line}:{start_col}: [{code}] {message}\n")
 
     sys.exit(1)
 
