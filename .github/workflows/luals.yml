@@ -2,32 +2,48 @@ name: GMod LuaLS Workflow
 
 on:
   workflow_dispatch:
+    inputs:
+      style_check:
+        description: "Report code style warnings"
+        type: boolean
+        default: false
   workflow_call:
+    inputs:
+      style_check:
+        description: "Report code style warnings"
+        type: boolean
+        default: false
 
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    env:
+      LUALS_VERSION: "3.19.2"
     steps:
       - name: "Checkout calling repository"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: project
 
       - name: "Checkout workflow repository"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
-          repository: CFC-Servers/gmod_luals_workflow
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
           path: gmod_luals_workflow
 
       - name: "Checkout GLua Snippets"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: luttje/glua-api-snippets
           ref: lua-language-server-addon
           path: glua-api-snippets
 
       - name: "Checkout LuaLS Include Addon"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: CFC-Servers/luals_gmod_include
           path: luals_gmod_include
@@ -39,13 +55,19 @@ jobs:
           mkdir luals
           cd $GITHUB_WORKSPACE/luals
 
-          curl -LO https://github.com/LuaLS/lua-language-server/releases/download/3.14.0/lua-language-server-3.14.0-linux-x64.tar.gz
-          tar -xzf lua-language-server-3.14.0-linux-x64.tar.gz
+          curl -fLO https://github.com/LuaLS/lua-language-server/releases/download/$LUALS_VERSION/lua-language-server-$LUALS_VERSION-linux-x64.tar.gz
+          tar -xzf lua-language-server-$LUALS_VERSION-linux-x64.tar.gz
 
       - name: Prepare config
+        env:
+          STYLE_CHECK_STATUS: ${{ inputs.style_check && 'Any' || 'None' }}
         run: |
-          sed "s#{{WORKSPACE}}#$GITHUB_WORKSPACE#g" $GITHUB_WORKSPACE/gmod_luals_workflow/luals_config.json > $GITHUB_WORKSPACE/luals_config.json
-          cat $GITHUB_WORKSPACE/luals_config.json
+          sed \
+            -e "s#{{WORKSPACE}}#$GITHUB_WORKSPACE#g" \
+            -e "s#{{STYLE_CHECK_STATUS}}#$STYLE_CHECK_STATUS#g" \
+            $GITHUB_WORKSPACE/gmod_luals_workflow/luals_config.json > $GITHUB_WORKSPACE/luals_config.json
+
+          python3 -m json.tool $GITHUB_WORKSPACE/luals_config.json
 
       - name: Run LuaLS
         run: |
@@ -59,6 +81,9 @@ jobs:
             --check=$GITHUB_WORKSPACE/project \
             || true
 
-          if [ -f $GITHUB_WORKSPACE/luals_output/check.json ]; then
-            cat $GITHUB_WORKSPACE/luals_output/check.json | $GITHUB_WORKSPACE/gmod_luals_workflow/check_parser.py
+          if [ ! -f $GITHUB_WORKSPACE/luals_output/check.json ]; then
+            echo "::error::LuaLS did not produce a check.json"
+            exit 1
           fi
+
+          $GITHUB_WORKSPACE/gmod_luals_workflow/check_parser.py < $GITHUB_WORKSPACE/luals_output/check.json

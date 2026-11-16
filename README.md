@@ -19,4 +19,16 @@ jobs:
     uses: CFC-Servers/gmod_luals_workflow/.github/workflows/luals.yml@main
 ```
 
-It's that simple! Your PR will receive annotations for any issues found by LuaLS.
+It's that simple! Your PR will receive annotations for any issues found by LuaLS. Errors fail the check, and warnings are annotated without failing it.
+
+Code style warnings are off by default. To turn them on, pass `style_check: true`:
+
+```yaml
+jobs:
+  luals:
+    uses: CFC-Servers/gmod_luals_workflow/.github/workflows/luals.yml@main
+    with:
+      style_check: true
+```
+
+To disable a diagnostic or declare globals for your project, add a [`.luarc.json`](https://luals.github.io/wiki/configuration/) to the root of your repository. Its settings are merged with the ones this workflow provides.
